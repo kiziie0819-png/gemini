@@ -33,7 +33,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         // 這裡的格式跟之前一樣，只是現在是由伺服器代勞
         contents: [{ parts: [{ text: prompt }] }],
-        tools: [{ googleSearch: {} }] // 依然保留上網搜尋的功能
+        //tools: [{ googleSearch: {} }] // 依然保留上網搜尋的功能
       })
     });
 
@@ -47,4 +47,5 @@ export default async function handler(req, res) {
     // 如果伺服器去跟 Google 溝通的過程中發生嚴重錯誤，回報給前端
     res.status(500).json({ error: { message: error.message } });
   }
+
 }
