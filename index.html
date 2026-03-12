@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的 Gemini 聊天室 (安全版)</title>
+  <style>
+    /* 這裡只是簡單的美化畫面，讓聊天室看起來不要太陽春 */
+    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; }
+    #chat-box { border: 1px solid #ccc; padding: 15px; min-height: 100px; margin-top: 20px; border-radius: 8px; white-space: pre-wrap; background: #f9f9f9; }
+    input { width: 70%; padding: 10px; font-size: 16px; }
+    button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <h2>串接 Gemini API 測試 (安全上線版)</h2>
+  
+  <input type="text" id="userInput" placeholder="隨便問我一點什麼...">
+  
+  <button onclick="askGemini()">送出</button>
+
+  <div id="chat-box">等待輸入中...</div>
+
+  <script>
+    // 這是負責處理送出邏輯的非同步函數 (async function)
+    async function askGemini() {
+      // 1. 取得使用者在輸入框裡打的文字
+      const prompt = document.getElementById('userInput').value;
+      const chatBox = document.getElementById('chat-box');
+      
+      // 如果什麼都沒打就按送出，跳出警告並停止執行
+      if (!prompt) return alert('請輸入內容！');
+      
+      // 在等待 API 回應的這段時間，先在畫面上顯示提示文字
+      chatBox.innerText = 'Gemini 思考中...';
+
+      try {
+        // 🛡️ 核心改變：我們不再直接連線到 Google 的網址！
+        // 而是呼叫我們自己寫的 Vercel 後端 API 路徑 (/api/chat)
+        const response = await fetch('/api/chat', {
+          method: 'POST', // 用 POST 方式傳遞資料（因為我們要傳問題過去）
+          headers: { 'Content-Type': 'application/json' },
+          // 把使用者輸入的問題 (prompt) 打包成 JSON 格式送給後端
+          body: JSON.stringify({ prompt: prompt }) 
+        });
+
+        // 等待我們的後端把 Google 的答案轉發回來，並解析成 JSON
+        const data = await response.json();
+        
+        // 如果後端回報有錯誤（例如 API Key 沒設定好，或額度爆了）
+        if (!response.ok || data.error) {
+          chatBox.innerText = `發生錯誤：${data.error?.message || '未知錯誤'}`;
+          return;
+        }
+        
+        // 如果一切順利，把 AI 回傳的第一筆文字內容顯示在畫面上
+        if (data.candidates && data.candidates.length > 0) {
+          chatBox.innerText = data.candidates[0].content.parts[0].text;
+        } else {
+          chatBox.innerText = '回傳格式不正確。';
+        }
+      } catch (error) {
+        // 如果連自己的後端都連不上（例如網路斷線），顯示錯誤訊息
+        chatBox.innerText = '網路請求失敗：' + error.message;
+      }
+    }
+  </script>
+</body>
+</html>
