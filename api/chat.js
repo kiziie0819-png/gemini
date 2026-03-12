@@ -32,8 +32,8 @@ export default async function handler(req, res) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         // 這裡的格式跟之前一樣，只是現在是由伺服器代勞
-        contents: [{ parts: [{ text: prompt }] }],
-        tools: [{ googleSearch: {} }] // 依然保留上網搜尋的功能
+        contents: [{ parts: [{ text: prompt }] }]
+        //tools: [{ googleSearch: {} }] // 依然保留上網搜尋的功能
       })
     });
 
@@ -49,5 +49,6 @@ export default async function handler(req, res) {
   }
 
 }
+
 
 
